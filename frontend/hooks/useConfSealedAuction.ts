@@ -121,7 +121,7 @@ export function useConfSealedAuction() {
       abi: auctionABI,
       functionName: "placeBid",
       args: [encryptedInput],
-      value: BigInt("100000000000000"), // 0.0001 ETH = inco.getFee()
+      value: 100000000000000n, // 0.0001 ETH = inco.getFee()
     });
   } catch (err) {
     console.error("Encryption error:", err);
