@@ -1,0 +1,12 @@
+{
+  "name": "sealed-auction",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "test": "cd contracts && forge test -vvv",
+    "deploy": "cd contracts && forge script script/DeployConfSealedAuction.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast"
+  }
+}
