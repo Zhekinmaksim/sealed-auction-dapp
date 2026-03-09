@@ -10,11 +10,11 @@ import { CONTRACT_ADDRESS } from "@/lib/wagmi";
 
 function formatTime(seconds: bigint): string {
   const s = Number(seconds);
-  if (s <= 0) return "Завершён";
+  if (s <= 0) return "Ended";
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  return [h > 0 ? `${h}ч` : "", m > 0 ? `${m}м` : "", `${sec}с`].filter(Boolean).join(" ");
+  return [h > 0 ? `${h}h` : "", m > 0 ? `${m}m` : "", `${sec}s`].filter(Boolean).join(" ");
 }
 
 function RoundHistory({ roundCount }: { roundCount: bigint }) {
@@ -23,9 +23,9 @@ function RoundHistory({ roundCount }: { roundCount: bigint }) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold text-white mb-3">📜 История раундов</h3>
+      <h3 className="text-lg font-semibold text-white mb-3">📜 Round History</h3>
       {count === 0 ? (
-        <p className="text-gray-400 text-sm">Нет завершённых раундов</p>
+        <p className="text-gray-400 text-sm">No completed rounds yet</p>
       ) : (
         <div className="space-y-2">
           {rounds.map((i) => (
@@ -50,11 +50,11 @@ function RoundItem({ index }: { index: number }) {
 
   return (
     <div className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-2 text-sm">
-      <span className="text-purple-300 font-medium">Раунд {index + 1}</span>
+      <span className="text-purple-300 font-medium">Round {index + 1}</span>
       <span className="text-white">{itemName}</span>
-      <span className="text-gray-400">{Number(bidCount)} ставок</span>
+      <span className="text-gray-400">{Number(bidCount)} bids</span>
       <span className="text-gray-500 text-xs">
-        {new Date(Number(endTime) * 1000).toLocaleDateString("ru-RU")}
+        {new Date(Number(endTime) * 1000).toLocaleDateString("en-US")}
       </span>
     </div>
   );
@@ -103,10 +103,10 @@ export default function SealedAuctionUI() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <div className="text-xs text-purple-300 uppercase tracking-widest mb-1">
-                Раунд #{currentRound?.toString() ?? "—"}
+                Round #{currentRound?.toString() ?? "—"}
               </div>
               <h2 className="text-2xl font-bold text-white">
-                {itemName ?? "Загрузка..."}
+                {itemName ?? "Loading..."}
               </h2>
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -114,7 +114,7 @@ export default function SealedAuctionUI() {
               auctionEnded ? "bg-yellow-500/20 text-yellow-300" :
               "bg-green-500/20 text-green-300"
             }`}>
-              {finalized ? "Завершён" : auctionEnded ? "Ожидает финализации" : "Активен"}
+              {finalized ? "Finalized" : auctionEnded ? "Awaiting Finalization" : "Active"}
             </span>
           </div>
 
@@ -123,32 +123,32 @@ export default function SealedAuctionUI() {
               <div className="text-2xl font-bold text-white">
                 {localTime !== undefined ? formatTime(localTime) : "—"}
               </div>
-              <div className="text-xs text-gray-400 mt-1">До конца</div>
+              <div className="text-xs text-gray-400 mt-1">Time Left</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold text-white">
                 {bidCount?.toString() ?? "—"}
               </div>
-              <div className="text-xs text-gray-400 mt-1">Ставок</div>
+              <div className="text-xs text-gray-400 mt-1">Bids</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold text-purple-300">
                 {roundCount?.toString() ?? "0"}
               </div>
-              <div className="text-xs text-gray-400 mt-1">Раундов сыграно</div>
+              <div className="text-xs text-gray-400 mt-1">Rounds Played</div>
             </div>
           </div>
 
           {/* Contract Address */}
           <div className="mt-4 text-xs text-gray-500 break-all">
-            Контракт: {CONTRACT_ADDRESS}
+            Contract: {CONTRACT_ADDRESS}
           </div>
         </div>
 
         {/* Place Bid */}
         {isConnected && !finalized && !auctionEnded && !hasBid && (
           <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-4">💰 Разместить ставку</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">💰 Place Your Bid</h3>
             <div className="flex gap-3">
               <div className="relative flex-1">
                 <input
@@ -167,12 +167,12 @@ export default function SealedAuctionUI() {
                 disabled={isLoading || !bidAmount}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl text-white font-semibold transition"
               >
-                {encryptionStatus === "encrypting" ? "🔒 Шифрую..." :
-                 isLoading ? "⏳ Отправка..." : "Seal Bid"}
+                {encryptionStatus === "encrypting" ? "🔒 Encrypting..." :
+                 isLoading ? "⏳ Sending..." : "Seal Bid"}
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              Ставка будет зашифрована через FHE — никто не узнает размер до финализации
+              Your bid is encrypted via FHE — no one can see the amount until finalization
             </p>
           </div>
         )}
@@ -180,14 +180,14 @@ export default function SealedAuctionUI() {
         {/* Already bid */}
         {isConnected && hasBid && !finalized && (
           <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 text-green-300 text-sm">
-            ✅ Ваша зашифрованная ставка принята. Ожидайте финализации аукциона.
+            ✅ Your encrypted bid has been submitted. Wait for the auction to be finalized.
           </div>
         )}
 
         {/* Owner Panel */}
         {isConnected && isOwner && (
           <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-purple-500/20">
-            <h3 className="text-lg font-semibold text-white mb-4">👑 Панель владельца</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">👑 Owner Panel</h3>
 
             {/* Finalize */}
             {!finalized && auctionEnded && (
@@ -196,17 +196,17 @@ export default function SealedAuctionUI() {
                 disabled={isLoading}
                 className="w-full py-3 bg-orange-600 hover:bg-orange-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl text-white font-semibold transition mb-4"
               >
-                {isLoading ? "⏳ Обработка..." : "🏁 Finalize Auction"}
+                {isLoading ? "⏳ Processing..." : "🏁 Finalize Auction"}
               </button>
             )}
 
             {/* Start New Auction */}
             {finalized && (
               <div className="space-y-3">
-                <p className="text-purple-300 text-sm">Запустить новый раунд:</p>
+                <p className="text-purple-300 text-sm">Start a new round:</p>
                 <input
                   type="text"
-                  placeholder="Название предмета (напр. Rare NFT #99)"
+                  placeholder="Item name (e.g. Rare NFT #99)"
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 transition"
@@ -214,7 +214,7 @@ export default function SealedAuctionUI() {
                 <div className="flex gap-3">
                   <input
                     type="number"
-                    placeholder="Длительность (сек)"
+                    placeholder="Duration (seconds)"
                     value={newDuration}
                     onChange={(e) => setNewDuration(e.target.value)}
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 transition"
@@ -238,14 +238,14 @@ export default function SealedAuctionUI() {
             isConfirmed ? "bg-green-500/10 border border-green-500/20 text-green-300" :
             "bg-blue-500/10 border border-blue-500/20 text-blue-300"
           }`}>
-            {isConfirmed ? "✅ Транзакция подтверждена!" : "⏳ Ожидание подтверждения..."}
+            {isConfirmed ? "✅ Transaction confirmed!" : "⏳ Waiting for confirmation..."}
             <a
               href={`https://sepolia.basescan.org/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="block mt-1 text-xs underline opacity-70"
             >
-              Посмотреть на BaseScan ↗
+              View on BaseScan ↗
             </a>
           </div>
         )}
@@ -268,7 +268,7 @@ export default function SealedAuctionUI() {
         {!isConnected && (
           <div className="text-center py-8 text-gray-400">
             <div className="text-4xl mb-3">🔌</div>
-            <p>Подключите кошелёк для участия в аукционе</p>
+            <p>Connect your wallet to participate in the auction</p>
           </div>
         )}
       </div>
