@@ -4,7 +4,7 @@ export const auctionABI = [
       { "internalType": "string", "name": "_itemName", "type": "string" },
       { "internalType": "uint256", "name": "_durationSeconds", "type": "uint256" }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "constructor"
   },
   {
@@ -12,7 +12,8 @@ export const auctionABI = [
     "inputs": [
       { "indexed": false, "internalType": "string", "name": "itemName", "type": "string" },
       { "indexed": false, "internalType": "uint256", "name": "endTime", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "round", "type": "uint256" }
+      { "indexed": false, "internalType": "uint256", "name": "round", "type": "uint256" },
+      { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }
     ],
     "name": "AuctionCreated",
     "type": "event"
@@ -20,7 +21,8 @@ export const auctionABI = [
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "round", "type": "uint256" }
+      { "indexed": false, "internalType": "uint256", "name": "round", "type": "uint256" },
+      { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }
     ],
     "name": "AuctionFinalized",
     "type": "event"
@@ -39,10 +41,18 @@ export const auctionABI = [
     "inputs": [
       { "indexed": false, "internalType": "uint256", "name": "round", "type": "uint256" },
       { "indexed": false, "internalType": "string", "name": "itemName", "type": "string" },
-      { "indexed": false, "internalType": "uint256", "name": "endTime", "type": "uint256" }
+      { "indexed": false, "internalType": "uint256", "name": "endTime", "type": "uint256" },
+      { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }
     ],
     "name": "NewRoundStarted",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "CREATION_DEPOSIT",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -154,10 +164,17 @@ export const auctionABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "roundCreator",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "bytes", "name": "encryptedAmount", "type": "bytes" }],
     "name": "placeBid",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -167,7 +184,7 @@ export const auctionABI = [
     ],
     "name": "startNewAuction",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -176,7 +193,8 @@ export const auctionABI = [
     "outputs": [
       { "internalType": "string", "name": "itemName", "type": "string" },
       { "internalType": "uint256", "name": "endTime", "type": "uint256" },
-      { "internalType": "uint256", "name": "bidCount", "type": "uint256" }
+      { "internalType": "uint256", "name": "bidCount", "type": "uint256" },
+      { "internalType": "address", "name": "creator", "type": "address" }
     ],
     "stateMutability": "view",
     "type": "function"

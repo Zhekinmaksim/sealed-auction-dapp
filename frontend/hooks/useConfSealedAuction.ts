@@ -16,7 +16,6 @@ export function useConfSealedAuction() {
   const { writeContract, data: txHash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash });
 
-  // Read contract state
   const { data: itemName, refetch: refetchItemName } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: auctionABI,
@@ -67,14 +66,23 @@ export function useConfSealedAuction() {
     functionName: "owner",
   });
 
+  const { data: roundCreator, refetch: refetchRoundCreator } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: auctionABI,
+    functionName: "roundCreator",
+  });
+
   const { data: roundCount, refetch: refetchRoundCount } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: auctionABI,
     functionName: "getRoundCount",
   });
 
-  const isOwner = address && ownerAddress && address.toLowerCase() === ownerAddress.toLowerCase();
-  const auctionEnded = auctionEndTime ? BigInt(Math.floor(Date.now() / 1000)) >= auctionEndTime : false;
+  const isOwner = address && ownerAddress &&
+    address.toLowerCase() === (ownerAddress as string).toLowerCase();
+  const auctionEnded = auctionEndTime
+    ? BigInt(Math.floor(Date.now() / 1000)) >= (auctionEndTime as bigint)
+    : false;
 
   const refetchAll = useCallback(() => {
     refetchItemName();
@@ -85,49 +93,39 @@ export function useConfSealedAuction() {
     refetchTime();
     refetchHasBid();
     refetchRoundCount();
-  }, [refetchItemName, refetchEndTime, refetchFinalized, refetchRound, refetchBidCount, refetchTime, refetchHasBid, refetchRoundCount]);
+    refetchRoundCreator();
+  }, [refetchItemName, refetchEndTime, refetchFinalized, refetchRound,
+      refetchBidCount, refetchTime, refetchHasBid, refetchRoundCount, refetchRoundCreator]);
 
   useEffect(() => {
     if (isConfirmed) refetchAll();
   }, [isConfirmed, refetchAll]);
 
-  // Poll time remaining
   useEffect(() => {
     const interval = setInterval(refetchTime, 5000);
     return () => clearInterval(interval);
   }, [refetchTime]);
 
   const placeBid = async () => {
-  if (!bidAmount || !address || !isConnected) return;
-  setEncryptionStatus("encrypting");
-
-  try {
-    const { encryptUint256 } = await import("@/lib/fhevm");
-
-    const bidAmountWei = parseEther(bidAmount);
-
-    // Encrypt using Inco Lightning ECIES
-    const encryptedInput = await encryptUint256(
-      bidAmountWei,
-      address,
-      CONTRACT_ADDRESS,
-      84532
-    );
-
-    setEncryptionStatus("done");
-
-    writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: auctionABI,
-      functionName: "placeBid",
-      args: [encryptedInput],
-      value: BigInt(100000000000000) as unknown as undefined, // 0.0001 ETH = inco.getFee()
-    });
-  } catch (err) {
-    console.error("Encryption error:", err);
-    setEncryptionStatus("idle");
-  }
-};
+    if (!bidAmount || !address || !isConnected) return;
+    setEncryptionStatus("encrypting");
+    try {
+      const { encryptUint256 } = await import("@/lib/fhevm");
+      const bidAmountWei = parseEther(bidAmount);
+      const encryptedInput = await encryptUint256(bidAmountWei, address, CONTRACT_ADDRESS, 84532);
+      setEncryptionStatus("done");
+      writeContract({
+        address: CONTRACT_ADDRESS,
+        abi: auctionABI,
+        functionName: "placeBid",
+        args: [encryptedInput],
+        value: parseEther("0.0001"), // inco.getFee()
+      });
+    } catch (err) {
+      console.error("Encryption error:", err);
+      setEncryptionStatus("idle");
+    }
+  };
 
   const finalize = () => {
     writeContract({
@@ -144,11 +142,11 @@ export function useConfSealedAuction() {
       abi: auctionABI,
       functionName: "startNewAuction",
       args: [newItemName, BigInt(newDuration)],
+      value: parseEther("0.001"), // CREATION_DEPOSIT
     });
   };
 
   return {
-    // State
     itemName: itemName as string | undefined,
     auctionEndTime,
     finalized: finalized as boolean | undefined,
@@ -159,7 +157,7 @@ export function useConfSealedAuction() {
     isOwner: !!isOwner,
     auctionEnded,
     roundCount: roundCount as bigint | undefined,
-    // UI state
+    roundCreator: roundCreator as string | undefined,
     bidAmount,
     setBidAmount,
     newItemName,
@@ -167,11 +165,9 @@ export function useConfSealedAuction() {
     newDuration,
     setNewDuration,
     encryptionStatus,
-    // Actions
     placeBid,
     finalize,
     startNewAuction,
-    // Tx state
     isPending,
     isConfirming,
     isConfirmed,

@@ -6,16 +6,16 @@ import "../src/ConfSealedAuction.sol";
 
 contract DeployConfSealedAuction is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_BASE_SEPOLIA");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Аукцион на "Rare NFT #42", длительность 1 час
-        ConfSealedAuction auction = new ConfSealedAuction(
-            "Rare NFT #42",
-            3600
+        ConfSealedAuction auction = new ConfSealedAuction{value: 0.001 ether}(
+            "Terminator",  // item name
+            3600           // duration: 1 hour
         );
 
-        console.log("Deployed at:", address(auction));
+        console.log("ConfSealedAuction deployed at:", address(auction));
+
         vm.stopBroadcast();
     }
 }
